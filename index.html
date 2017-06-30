@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2017 Chang Park (naltang@yahoo.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Current version of this page can be obtained at
+https://www.koreanhla.com/acmg/standards_and_guidelines/interpretation_of_sequence_variants/
+
+2017.6.30	1.0	initial version
+
+-->
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<style>
+	body
+	{
+		background-color: white;
+	}
+
+	table, td
+	{
+		border: 1px solid darkgray;
+		border-collapse: collapse;
+	}
+
+	.w15
+	{
+		width: 15%;
+	}
+
+	.center
+	{
+		text-align: center;
+	}
+
+	.vcenter
+	{
+		vertical-align: middle;
+	}
+
+	.bold
+	{
+		font-weight: bold;
+	}
+
+	.zoom_check
+	{
+		zoom: 1.5; /* non standard */
+	}
+	</style>
+	<title>ACMG Standards and Guidelines for the interpretation of sequence variants</title>
+</head>
+<script>
+
+var dict_criteria = {};
+var count_PVS;
+var count_PS;
+var count_PM;
+var count_PP;
+var count_BA;
+var count_BS;
+var count_BP;
+
+var criteria_names =
+[
+	"PVS1",
+	"PS1", "PS2", "PS3", "PS4",
+	"PM1", "PM2", "PM3", "PM4", "PM5", "PM6",
+	"PP1", "PP2", "PP3", "PP4", "PP5",
+	"BA1",
+	"BS1", "BS2", "BS3", "BS4",
+	"BP1", "BP2", "BP3", "BP4", "BP5", "BP6", "BP7"
+];
+
+var matrix_text_rows =
+	[
+		"Population data",
+		"Computational and predictive data",
+		"Functional data",
+		"Segregation data",
+		"De Novo data",
+		"Allelic data",
+		"Other database",
+		"Other data"
+	];
+var matrix_color_cols =
+	[
+		"#808",
+		"#008",
+		"#080",
+		"#c40",
+		"#c00",
+		"#c00"
+	];
+var matrix_text = [
+	[
+		"MAF is too high for disorder BA1 <span id=criteria_BA1></span> / BS1 <span id=criteria_BS1></span> OR observation in controls inconsistent with disease penetrance BS2<span id=criteria_BS2></span>",
+		"",
+		"",
+		"Absent in population databases PM2 <span id=criteria_PM2></span><br/>",
+		"Prevalence in affecteds statistically increased over controls PS4 <span id=criteria_PS4></span>",
+		""
+	],
+	[
+		"",
+		"Multiple lines of computational evidence suggest no impact on gene /gene product BP4 <span id=criteria_BP4></span> <br/>Missense in gene where only truncating cause disease BP1 <span id=criteria_BP1></span><br/> Silent variant with non predicted splice impact BP7 <span id=criteria_BP7></span><br/> In-frame indels in repeat w/out known function BP3 <span id=criteria_BP3></span>",
+		"Multiple lines of computational evidence support a deleterious effect on the gene /gene product PP3 <span id=criteria_PP3></span>",
+		"Novel missense change at an amino acid residue where a different pathogenic missense change has been seen before PM5 <span id=criteria_PM5></span><br/> Protein length changing variant PM4 <span id=criteria_PM4></span>",
+		"Same amino acid change as an established pathogenic variant PS1 <span id=criteria_PS1></span>",
+		"Predicted null variant in a gene where LOF is a known mechanism of disease PVS1 <span id=criteria_PVS1></span>"
+	],
+	[
+		"Well-established functional studies show no deleterious effect BS3 <span id=criteria_BS3></span>",
+		"",
+		"Missense in gene with low rate of benign missense variants and path. missenses common PP2 <span id=criteria_PP2></span>",
+		"Mutational hot spot or well-studied functional domain without benign variation PM1 <span id=criteria_PM1></span>",
+		"Well-established functional studies show a deleterious effect PS3 <span id=criteria_PS3></span>",
+		""
+	],
+	[
+		"Nonsegregation with disease BS4 <span id=criteria_BS4></span>",
+		"",
+		"Cosegregation with disease in multiple affected family members PP1 <span id=criteria_PP1></span>",
+		"",
+		"",
+		""
+	],
+	[
+		"",
+		"",
+		"",
+		"De novo (without paternity & maternity confirmed) PM6 <span id=criteria_PM6></span>",
+		"De novo (paternity and maternity confirmed) PS2 <span id=criteria_PS2></span>",
+		"",
+	],
+	[
+		"",
+		"Observed in trans with a dominant variant BP2<br/> Observed in cis with a pathogenic variant BP2 <span id=criteria_BP2></span>",
+		"",
+		"For recessive disorders, detected in trans with a pathogenic variant PM3 <span id=criteria_PM3></span>",
+		"",
+		"",
+	],
+	[
+		"",
+		"Reputable source w/out shared data = benign BP6 <span id=criteria_BP6></span>",
+		"Reputable source = pathogenic PP5 <span id=criteria_PP5></span>",
+		"",
+		"",
+		"",
+	],
+	[
+		"",
+		"Found in case with an alternate cause BP5 <span id=criteria_BP5></span>",
+		"Patient’s phenotype or FH highly specific for gene PP4 <span id=criteria_PP4></span>",
+		"",
+		"",
+		"",
+	]
+];
+
+var criteria_checkbox_prefix = "check_";
+
+function get_criteria_checkbox_status (criteria_name)
+{
+	var element_id = criteria_checkbox_prefix + criteria_name;
+	var element = document.getElementById (element_id);
+	var is_checked = element.checked;
+	return (is_checked);
+}
+
+function get_criteria_checkbox_status_all ()
+{
+	for (var index = 0; index < criteria_names.length; index++)
+	{
+		criteria_name = criteria_names[index];
+		dict_criteria[criteria_name] = get_criteria_checkbox_status (criteria_name);
+	}
+}
+
+function initialize_criteria (criteria_names)
+{
+	var criteria_prefix = "criteria_";
+
+	var criteria_html_1 = "<input id=" + criteria_checkbox_prefix;
+	var criteria_html_2 = " type=checkbox class='zoom_check' onchange='on_change()'>";
+
+	for (var index = 0; index < criteria_names.length; index++)
+	{
+		var criteria_name = criteria_names[index];
+		var criteria_html = criteria_html_1 + criteria_name + criteria_html_2;
+		var element_id = criteria_prefix + criteria_name;
+		var element =document.getElementById (element_id);
+		element.innerHTML = criteria_html;
+	}
+}
+
+function on_change ()
+{
+	get_criteria_checkbox_status_all ();
+	//random_setup ();
+	count_true_criteria_all ();
+	fill_report();
+}
+
+function initialize_text ()
+{
+	for (var index_row = 0; index_row < matrix_text_rows.length; index_row ++)
+	{
+		var text_row = matrix_text_rows[index_row];
+		var id_element = "row_" + index_row;
+		var element = document.getElementById(id_element);
+		element.innerHTML = text_row;
+		//element.parentElement.style.textAlign = "center";
+
+		for (var index_col = 0; index_col < matrix_text[index_row].length; index_col ++)
+		{
+			var text_cell = matrix_text[index_row][index_col];
+			id_element = "cell_" + index_row + index_col;
+			element = document.getElementById(id_element);
+			element.innerHTML = text_cell;
+			element.style.color = matrix_color_cols [index_col];
+		}
+	}
+}
+
+function count_true_criteria (list_criteria)
+{
+	var count_true = 0;
+	for (var index = 0; index < list_criteria.length; index ++)
+	{
+		var criteria_name = list_criteria[index];
+		if (dict_criteria [criteria_name] == true)
+		{
+			count_true ++;
+		}
+	}
+	return (count_true);
+}
+
+var count_PVS;
+var count_PS;
+var count_PM;
+var count_PP;
+var count_BA;
+var count_BS;
+var count_BP;
+
+function count_true_criteria_all ()
+{
+	count_PVS = count_true_criteria (["PVS1"]);
+	count_PS = count_true_criteria (["PS1", "PS2", "PS3", "PS4"]);
+	count_PM = count_true_criteria (["PM1", "PM2", "PM3", "PM4", "PM5", "PM6"]);
+	count_PP = count_true_criteria (["PP1", "PP2", "PP3", "PP4", "PP5"]);
+	count_BA = count_true_criteria (["BA1"]);
+	count_BS = count_true_criteria (["BS1", "BS2", "BS3", "BS4"]);
+	count_BP = count_true_criteria (["BP1", "BP2", "BP3", "BP4", "BP5", "BP6", "BP7"]);
+}
+
+function combine_is_pathogenic_1 ()
+{
+	if (count_PVS == 1)
+	{
+		var bool_1a = combine_is_pathogenic_1a ();
+		var bool_1b = combine_is_pathogenic_1b ();
+		var bool_1c = combine_is_pathogenic_1c ();
+		var bool_1d = combine_is_pathogenic_1d ();
+		if (bool_1a || bool_1b || bool_1c || bool_1d)
+		{
+			rule_display ("rule_pathogenic_1", true);
+			return (true);
+		}
+	}
+	rule_display ("rule_pathogenic_1", false);
+	return (false);
+}
+
+function combine_is_pathogenic_1a ()
+{
+	if (count_PS >= 1)
+	{
+		rule_display ("rule_pathogenic_1a", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_1a", false);
+	return (false);
+}
+
+function combine_is_pathogenic_1b ()
+{
+	if (count_PM >= 2)
+	{
+		rule_display ("rule_pathogenic_1b", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_1b", false);
+	return (false);
+}
+
+function combine_is_pathogenic_1c ()
+{
+	if ((count_PM == 1) && (count_PP == 1))
+	{
+		rule_display ("rule_pathogenic_1c", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_1c", false);
+	return (false);
+}
+
+function combine_is_pathogenic_1d ()
+{
+	if (count_PP >= 2)
+	{
+		rule_display ("rule_pathogenic_1d", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_1d", false);
+	return (false);
+}
+
+function combine_is_pathogenic_2 ()
+{
+	if (count_PS >= 2)
+	{
+		rule_display ("rule_pathogenic_2", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_2", false);
+	return (false);
+}
+
+function combine_is_pathogenic_3 ()
+{
+	if (count_PS == 1)
+	{
+		var bool_3a = combine_is_pathogenic_3a ();
+		var bool_3b = combine_is_pathogenic_3b ();
+		var bool_3c = combine_is_pathogenic_3c ();
+		if (bool_3a || bool_3b || bool_3c)
+		{
+			rule_display ("rule_pathogenic_3", true);
+			return (true);
+		}
+	}
+	rule_display ("rule_pathogenic_3", false);
+	return (false);
+}
+
+function combine_is_pathogenic_3a ()
+{
+	if (count_PM >= 3)
+	{
+		rule_display ("rule_pathogenic_3a", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_3a", false);
+	return (false);
+}
+
+function combine_is_pathogenic_3b ()
+{
+	if ((count_PM == 2) && (count_PP >= 2))
+	{
+		rule_display ("rule_pathogenic_3b", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_3b", false);
+	return (false);
+}
+
+function combine_is_pathogenic_3c ()
+{
+	if ((count_PM == 1) && (count_PP >= 4))
+	{
+		rule_display ("rule_pathogenic_3c", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic_3c", false);
+	return (false);
+}
+
+function combine_is_pathogenic ()
+{
+	var bool_1 = combine_is_pathogenic_1 ();
+	var bool_2 = combine_is_pathogenic_2 ();
+	var bool_3 = combine_is_pathogenic_3 ();
+
+	if (bool_1 || bool_2 || bool_3)
+	{
+		rule_display ("rule_pathogenic", true);
+		return (true);
+	}
+	rule_display ("rule_pathogenic", false);
+	return (false);
+}
+
+function combine_is_likely_pathogenic_1 ()
+{
+	if ((count_PVS == 1) && (count_PM == 1))
+	{
+		rule_display ("rule_likely_pathogenic_1", true);
+		return (true);
+	}
+	rule_display ("rule_likely_pathogenic_1", false);
+	return (false);
+}
+
+function combine_is_likely_pathogenic_2 ()
+{
+	if ((count_PS == 1) && (count_PM >= 1) && (count_PM <= 2))
+	{
+		rule_display ("rule_likely_pathogenic_2", true);
+		return (true);
+	}
+	rule_display ("rule_likely_pathogenic_2", false);
+	return (false);
+}
+
+function combine_is_likely_pathogenic_3 ()
+{
+	if ((count_PS == 1) && (count_PP >= 2))
+	{
+		rule_display ("rule_likely_pathogenic_3", true);
+		return (true);
+	}
+	rule_display ("rule_likely_pathogenic_3", false);
+	return (false);
+}
+
+function combine_is_likely_pathogenic_4 ()
+{
+	if (count_PM >= 3)
+	{
+		rule_display ("rule_likely_pathogenic_4", true);
+		return (true);
+	}
+	rule_display ("rule_likely_pathogenic_4", false);
+	return (false);
+}
+
+function combine_is_likely_pathogenic_5 ()
+{
+	if ((count_PM == 2) && (count_PP >= 2))
+	{
+		rule_display ("rule_likely_pathogenic_5", true);
+		return (true);
+	}
+	rule_display ("rule_likely_pathogenic_5", false);
+	return (false);
+}
+
+function combine_is_likely_pathogenic_6 ()
+{
+	if ((count_PM == 1) && (count_PP >= 4))
+	{
+		rule_display ("rule_likely_pathogenic_6", true);
+		return (true);
+	}
+	rule_display ("rule_likely_pathogenic_6", false);
+	return (false);
+}
+
+function combine_is_likely_pathogenic ()
+{
+	var bool_1 = combine_is_likely_pathogenic_1 ();
+	var bool_2 = combine_is_likely_pathogenic_2 ();
+	var bool_3 = combine_is_likely_pathogenic_3 ();
+	var bool_4 = combine_is_likely_pathogenic_4 ();
+	var bool_5 = combine_is_likely_pathogenic_5 ();
+	var bool_6 = combine_is_likely_pathogenic_6 ();
+
+	if (bool_1 || bool_2 || bool_3 || bool_4 || bool_5 || bool_6)
+	{
+		rule_display ("rule_likely_pathogenic", true);
+		return (true);
+	}
+	rule_display ("rule_likely_pathogenic", false);
+	return (false);
+}
+
+function combine_is_benign_1 ()
+{
+	if (count_BA == 1)
+	{
+		rule_display ("rule_benign_1", true);
+		return (true);
+	}
+	rule_display ("rule_benign_1", false);
+	return (false);
+}
+
+function combine_is_benign_2 ()
+{
+	if (count_BS >= 2)
+	{
+		rule_display ("rule_benign_2", true);
+		return (true);
+	}
+	rule_display ("rule_benign_2", false);
+	return (false);
+}
+
+function combine_is_benign ()
+{
+	var bool_1 = combine_is_benign_1 ();
+	var bool_2 = combine_is_benign_2 ();
+
+	if (bool_1 || bool_2)
+	{
+		rule_display ("rule_benign", true);
+		return (true);
+	}
+	rule_display ("rule_benign", false);
+	return (false);
+}
+
+function combine_is_likely_benign_1 ()
+{
+	if ((count_BS == 1) && (count_BP == 1))
+	{
+		rule_display ("rule_likely_benign_1", true);
+		return (true);
+	}
+	rule_display ("rule_likely_benign_1", false);
+	return (false);
+}
+
+function combine_is_likely_benign_2 ()
+{
+	if (count_BP >= 2)
+	{
+		rule_display ("rule_likely_benign_2", true);
+		return (true);
+	}
+	rule_display ("rule_likely_benign_2", false);
+	return (false);
+}
+
+function combine_is_likely_benign ()
+{
+	var bool_1 = combine_is_likely_benign_1 ();
+	var bool_2 = combine_is_likely_benign_2 ();
+
+	if (bool_1 || bool_2)
+	{
+		rule_display ("rule_likely_benign", true);
+		return (true);
+	}
+	rule_display ("rule_likely_benign", false);
+	return (false);
+}
+
+function combine_is_uncertain_significance_1 ()
+{
+	var bool_p = combine_is_pathogenic ();
+	var bool_lp = combine_is_likely_pathogenic ();
+	var bool_b = combine_is_benign ();
+	var bool_lb = combine_is_likely_benign ();
+
+	if ((bool_p || bool_lp || bool_b || bool_lb) == false)
+	{
+		rule_display ("rule_uncertain_significance_1", true);
+		return (true);
+	}
+	rule_display ("rule_uncertain_significance_1", false);
+	return (false);
+}
+
+function combine_is_uncertain_significance_2 ()
+{
+	var bool_p = combine_is_pathogenic ();
+	var bool_lp = combine_is_likely_pathogenic ();
+	var bool_b = combine_is_benign ();
+	var bool_lb = combine_is_likely_benign ();
+
+	var bool_p_series = bool_p || bool_lp;
+	var bool_b_series = bool_b || bool_lb;
+
+	if (bool_p_series && bool_b_series)
+	{
+		rule_display ("rule_uncertain_significance_2", true);
+		return (true);
+	}
+	rule_display ("rule_uncertain_significance_2", false);
+	return (false);
+}
+
+function combine_is_uncertain_significance ()
+{
+	var bool_1 = combine_is_uncertain_significance_1 ();
+	var bool_2 = combine_is_uncertain_significance_2 ();
+
+	if (bool_1 || bool_2)
+	{
+		rule_display ("rule_uncertain_significance", true);
+		return (true);
+	}
+	rule_display ("rule_uncertain_significance", false);
+	return (false);
+}
+
+function fill_report ()
+{
+	var bool_p = combine_is_pathogenic ();
+	var bool_lp = combine_is_likely_pathogenic ();
+	var bool_b = combine_is_benign ();
+	var bool_lb = combine_is_likely_benign ();
+	var bool_us = combine_is_uncertain_significance ();
+
+	var combined_significance = "";
+
+	if (bool_p)
+	{
+		combined_significance = "Pathogenic";
+	}
+	else if (bool_lp)
+	{
+		combined_significance = "Likely Pathogenic";
+	}
+
+	if (bool_b)
+	{
+		combined_significance = "Benign";
+	}
+	else if (bool_lb)
+	{
+		combined_significance = "Likely Benign";
+	}
+
+	if (bool_us)
+	{
+		combined_significance = "Uncertain Significance";
+	}
+
+	var element = document.getElementById ("combined_significance");
+	element.innerHTML = combined_significance;
+
+	var evidence_of_benign_impact = "";
+	var evidence_of_pathogenicity= "";
+
+	for (var criteria_name in dict_criteria)
+	{
+		bool_evidence = dict_criteria[criteria_name];
+		if (bool_evidence)
+		{
+			if (criteria_name[0] == ("P"))
+			{
+			//if (criteria_name.startsWith ("P"))
+				evidence_of_pathogenicity += criteria_name + " ";
+			}
+			else
+			{
+				evidence_of_benign_impact += criteria_name + " ";
+			}
+		}
+	}
+
+	document.getElementById ("evidence_of_pathogenicity").innerHTML = evidence_of_pathogenicity;
+	document.getElementById ("evidence_of_benign_impact").innerHTML = evidence_of_benign_impact;
+}
+
+function rule_display (name_element, is_true)
+{
+	var	string_false = "&emsp;";
+	var	string_true = "&check;";
+	var	string_to_display = string_false;
+
+	if (is_true)
+	{
+		string_to_display = string_true;
+	}
+
+	document.getElementById (name_element).innerHTML = string_to_display;
+	document.getElementById (name_element).style.fontWeight = "bold";
+	document.getElementById (name_element).style.color = "#080";
+}
+
+function on_load()
+{
+	initialize_text ();
+	initialize_criteria (criteria_names);
+	on_change();
+}
+</script>
+
+<body onload="on_load()">
+Evidence of pathogenicity : <span id="evidence_of_pathogenicity" class="bold"></span><br/>
+Evidence of benign impact : <span id="evidence_of_benign_impact"class="bold"></span><br/>
+Combined significance : <span id="combined_significance"class="bold"></span><br/>
+<br/>
+
+<table>
+	<tr>
+		<td rowspan=2>&nbsp;</td>
+		<td colspan=2 class="center bold">Benign</td>
+		<td colspan=4 class="center bold">Pathogenic</td>
+	</tr>
+	<tr>
+		<td class="w15 center bold">Strong (BS)</td>
+		<td class="w15 center bold">Supporting (BP)</td>
+		<td class="w15 center bold">Supporting (PP)</td>
+		<td class="w15 center bold">Moderate (PM)</td>
+		<td class="w15 center bold">Strong (PS)</td>
+		<td class="w15 center bold">Very Strong (PVS)</td>
+	</tr>
+	<tr>
+		<td><span id="row_0"></span></td>
+		<td><span id="cell_00"></span></td>
+		<td><span id="cell_01"></span></td>
+		<td><span id="cell_02"></span></td>
+		<td><span id="cell_03"></span></td>
+		<td><span id="cell_04"></span></td>
+		<td><span id="cell_05"></span></td>
+	</tr>
+	<tr>
+		<td><span id="row_1"></span></td>
+		<td><span id="cell_10"></span></td>
+		<td><span id="cell_11"></span></td>
+		<td><span id="cell_12"></span></td>
+		<td><span id="cell_13"></span></td>
+		<td><span id="cell_14"></span></td>
+		<td><span id="cell_15"></span></td>
+	</tr>
+	<tr>
+		<td><span id="row_2"></span></td>
+		<td><span id="cell_20"></span></td>
+		<td><span id="cell_21"></span></td>
+		<td><span id="cell_22"></span></td>
+		<td><span id="cell_23"></span></td>
+		<td><span id="cell_24"></span></td>
+		<td><span id="cell_25"></span></td>
+	</tr>
+	<tr>
+		<td><span id="row_3"></span></td>
+		<td><span id="cell_30"></span></td>
+		<td><span id="cell_31"></span></td>
+		<td><span id="cell_32"></span></td>
+		<td><span id="cell_33"></span></td>
+		<td><span id="cell_34"></span></td>
+		<td><span id="cell_35"></span></td>
+	</tr>
+	<tr>
+		<td><span id="row_4"></span></td>
+		<td><span id="cell_40"></span></td>
+		<td><span id="cell_41"></span></td>
+		<td><span id="cell_42"></span></td>
+		<td><span id="cell_43"></span></td>
+		<td><span id="cell_44"></span></td>
+		<td><span id="cell_45"></span></td>
+	</tr>
+	<tr>
+		<td><span id="row_5"></span></td>
+		<td><span id="cell_50"></span></td>
+		<td><span id="cell_51"></span></td>
+		<td><span id="cell_52"></span></td>
+		<td><span id="cell_53"></span></td>
+		<td><span id="cell_54"></span></td>
+		<td><span id="cell_55"></span></td>
+	</tr>
+	<tr>
+		<td><span id="row_6"></span></td>
+		<td><span id="cell_60"></span></td>
+		<td><span id="cell_61"></span></td>
+		<td><span id="cell_62"></span></td>
+		<td><span id="cell_63"></span></td>
+		<td><span id="cell_64"></span></td>
+		<td><span id="cell_65"></span></td>
+	</tr>
+	<tr>
+		<td><span id="row_7"></span></td>
+		<td><span id="cell_70"></span></td>
+		<td><span id="cell_71"></span></td>
+		<td><span id="cell_72"></span></td>
+		<td><span id="cell_73"></span></td>
+		<td><span id="cell_74"></span></td>
+		<td><span id="cell_75"></span></td>
+	</tr>
+</table>
+
+<br/>
+
+<table>
+	<tr>
+		<td rowspan=10 class="center">Pathogenic<br/><span id="rule_pathogenic"></span></td>
+		<td><span id="rule_pathogenic_1">&emsp;</span></td>
+		<td>(i) 1 Very strong (PVS1) AND</td>
+	</tr>
+	<tr>
+		<td><span id="rule_pathogenic_1a"></span></td>
+		<td>&emsp;(a) &ge;1 Strong (PS1-PS4) OR</td>
+	</tr>
+	<tr>
+		<td><span id="rule_pathogenic_1b"></span></td>
+		<td>&emsp;(b) &ge;2 Moderate (PM1-PM6) OR</td>
+	</tr>
+	<tr>
+		<td><span id="rule_pathogenic_1c"></span></td>
+		<td>&emsp;(c) 1 Moderate (PM1-PM6) and 1 supporting (PP1-PP5) OR</td>
+	</tr>
+	<tr>
+		<td><span id="rule_pathogenic_1d"></span></td>
+		<td>&emsp;(d) &ge;2 Supporting (PP1-PP5)</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_pathogenic_2"></span></td>
+		<td>(ii) &ge;2 Strong (PS1-PS4) OR</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_pathogenic_3"></span></td>
+		<td>(iii) 1 Strong (PS1-PS4) AND</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_pathogenic_3a"></span></td>
+		<td>&emsp;(a) &ge;3 Moderate (PM1-PM6) OR</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_pathogenic_3b"></span></td>
+		<td>&emsp;(b) 2 Moderate (PM1-PM6) AND &ge;2 Supporting (PP1-PP5) OR</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_pathogenic_3c"></span></td>
+		<td>&emsp;(c) 1 Moderate (PM1-PM6) AND &ge;4 supporting (PP1-PP5)</td>
+	</tr>
+
+	<tr>
+		<td rowspan=6 class="center">Likely pathogenic<br/><span id="rule_likely_pathogenic"></span></td>
+		<td><span id="rule_likely_pathogenic_1"></span></td>
+		<td>(i) 1 Very strong (PVS1) AND 1 moderate (PM1-PM6) OR</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_likely_pathogenic_2"></span></td>
+		<td>(ii) 1 Strong (PS1-PS4) AND 1-2 moderate (PM1-PM6) OR</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_likely_pathogenic_3"></span></td>
+		<td>(iii) 1 Strong (PS1-PS4) AND &ge;2 supporting (PP1-PP5) OR</td>
+	</tr>
+
+	<tr>
+		<td><span id="rule_likely_pathogenic_4"></span></td>
+		<td>(iv) &ge;3 Moderate (PM1-PM6) OR</td>
+	</tr>
+	<tr>
+		<td><span id="rule_likely_pathogenic_5"></span></td>
+		<td>(v) 2 Moderate (PM1-PM6) AND &ge;2 supporting (PP1-PP5)</td>
+	</tr>
+	<tr>
+		<td><span id="rule_likely_pathogenic_6"></span></td>
+		<td>(vi) 1 Moderate (PM1-PM6) AND &ge;4 supporting (PP1-PP5)</td>
+	</tr>
+
+	<tr>
+		<td rowspan=2 class="center">Benign<br/><span id="rule_benign"></span></td>
+		<td><span id="rule_benign_1"></span></td>
+		<td>(i) 1 Stand-alone (BA1) OR</td>
+	</tr>
+	<tr>
+		<td><span id="rule_benign_2">&checkmark;</span></td>
+		<td>(ii) &ge;2 Strong (BS1-BS4)</td>
+	</tr>
+
+	<tr>
+		<td rowspan=2 class="center">Likely benign<br/><span id="rule_likely_benign"></span></td>
+		<td><span id="rule_likely_benign_1">&checkmark;</span></td>
+		<td>(i) 1 Strong (BS1-BS4) and 1 supporting (BP1-BP7) OR</td>
+	</tr>
+	<tr>
+		<td><span id="rule_likely_benign_2">&emsp;</span></td>
+		<td>(ii) &ge;2 Supporting</td>
+	</tr>
+
+	<tr>
+		<td rowspan=2 class="center">Uncertain significance<br/><span id="rule_uncertain_significance"></span></td>
+		<td><span id="rule_uncertain_significance_1"></span></td>
+		<td>(i) Other criteria shown above are not met OR</td>
+	</tr>
+	<tr>
+		<td><span id="rule_uncertain_significance_2"></span></td>
+		<td>(ii)the criteria for benign and pathogenic are contradictory️</td>
+	</tr>
+</table>
+<p>
+	This page is a partial implementation of an article of<br/>
+
+Richards S, Aziz N, Bale S, et al.
+Standards and guidelines for the interpretation of sequence variants:
+a joint consensus recommendation of the American College of Medical Genetics and Genomics and the Association for Molecular Pathology.
+<span style="font-style:italic">Genetics in medicine</span>.
+2015 Mar 5;17(5):405-23.
+	<a href="https://www.acmg.net/docs/standards_guidelines_for_the_interpretation_of_sequence_variants.pdf">PDF</a>
+<p>
+	This page is distributed under the MIT license. (view page source for more info)
+</body>
+</html>
+
