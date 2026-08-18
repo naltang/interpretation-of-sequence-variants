@@ -196,7 +196,7 @@ function get_criteria_checkbox_status_all ()
 {
 	for (var index = 0; index < criteria_names.length; index++)
 	{
-		criteria_name = criteria_names[index];
+		var criteria_name = criteria_names[index];
 		dict_criteria[criteria_name] = get_criteria_checkbox_status (criteria_name);
 	}
 }
@@ -253,21 +253,13 @@ function count_true_criteria (list_criteria)
 	for (var index = 0; index < list_criteria.length; index ++)
 	{
 		var criteria_name = list_criteria[index];
-		if (dict_criteria [criteria_name] == true)
+		if (dict_criteria [criteria_name] === true)
 		{
 			count_true ++;
 		}
 	}
 	return (count_true);
 }
-
-var count_PVS;
-var count_PS;
-var count_PM;
-var count_PP;
-var count_BA;
-var count_BS;
-var count_BP;
 
 function count_true_criteria_all ()
 {
@@ -282,7 +274,7 @@ function count_true_criteria_all ()
 
 function combine_is_pathogenic_1 ()
 {
-	if (count_PVS == 1)
+	if (count_PVS === 1)
 	{
 		var bool_1a = combine_is_pathogenic_1a ();
 		var bool_1b = combine_is_pathogenic_1b ();
@@ -322,7 +314,7 @@ function combine_is_pathogenic_1b ()
 
 function combine_is_pathogenic_1c ()
 {
-	if ((count_PM == 1) && (count_PP == 1))
+	if ((count_PM === 1) && (count_PP === 1))
 	{
 		rule_display ("rule_pathogenic_1c", true);
 		return (true);
@@ -355,7 +347,7 @@ function combine_is_pathogenic_2 ()
 
 function combine_is_pathogenic_3 ()
 {
-	if (count_PS == 1)
+	if (count_PS === 1)
 	{
 		var bool_3a = combine_is_pathogenic_3a ();
 		var bool_3b = combine_is_pathogenic_3b ();
@@ -383,7 +375,7 @@ function combine_is_pathogenic_3a ()
 
 function combine_is_pathogenic_3b ()
 {
-	if ((count_PM == 2) && (count_PP >= 2))
+	if ((count_PM === 2) && (count_PP >= 2))
 	{
 		rule_display ("rule_pathogenic_3b", true);
 		return (true);
@@ -394,7 +386,7 @@ function combine_is_pathogenic_3b ()
 
 function combine_is_pathogenic_3c ()
 {
-	if ((count_PM == 1) && (count_PP >= 4))
+	if ((count_PM === 1) && (count_PP >= 4))
 	{
 		rule_display ("rule_pathogenic_3c", true);
 		return (true);
@@ -420,7 +412,7 @@ function combine_is_pathogenic ()
 
 function combine_is_likely_pathogenic_1 ()
 {
-	if ((count_PVS == 1) && (count_PM == 1))
+	if ((count_PVS === 1) && (count_PM === 1))
 	{
 		rule_display ("rule_likely_pathogenic_1", true);
 		return (true);
@@ -431,7 +423,7 @@ function combine_is_likely_pathogenic_1 ()
 
 function combine_is_likely_pathogenic_2 ()
 {
-	if ((count_PS == 1) && (count_PM >= 1) && (count_PM <= 2))
+	if ((count_PS === 1) && (count_PM >= 1) && (count_PM <= 2))
 	{
 		rule_display ("rule_likely_pathogenic_2", true);
 		return (true);
@@ -442,7 +434,7 @@ function combine_is_likely_pathogenic_2 ()
 
 function combine_is_likely_pathogenic_3 ()
 {
-	if ((count_PS == 1) && (count_PP >= 2))
+	if ((count_PS === 1) && (count_PP >= 2))
 	{
 		rule_display ("rule_likely_pathogenic_3", true);
 		return (true);
@@ -464,7 +456,7 @@ function combine_is_likely_pathogenic_4 ()
 
 function combine_is_likely_pathogenic_5 ()
 {
-	if ((count_PM == 2) && (count_PP >= 2))
+	if ((count_PM === 2) && (count_PP >= 2))
 	{
 		rule_display ("rule_likely_pathogenic_5", true);
 		return (true);
@@ -475,7 +467,7 @@ function combine_is_likely_pathogenic_5 ()
 
 function combine_is_likely_pathogenic_6 ()
 {
-	if ((count_PM == 1) && (count_PP >= 4))
+	if ((count_PM === 1) && (count_PP >= 4))
 	{
 		rule_display ("rule_likely_pathogenic_6", true);
 		return (true);
@@ -504,7 +496,7 @@ function combine_is_likely_pathogenic ()
 
 function combine_is_benign_1 ()
 {
-	if (count_BA == 1)
+	if (count_BA === 1)
 	{
 		rule_display ("rule_benign_1", true);
 		return (true);
@@ -540,7 +532,7 @@ function combine_is_benign ()
 
 function combine_is_likely_benign_1 ()
 {
-	if ((count_BS == 1) && (count_BP == 1))
+	if ((count_BS === 1) && (count_BP === 1))
 	{
 		rule_display ("rule_likely_benign_1", true);
 		return (true);
@@ -581,7 +573,7 @@ function combine_is_uncertain_significance_1 ()
 	var bool_b = combine_is_benign ();
 	var bool_lb = combine_is_likely_benign ();
 
-	if ((bool_p || bool_lp || bool_b || bool_lb) == false)
+	if ((bool_p || bool_lp || bool_b || bool_lb) === false)
 	{
 		rule_display ("rule_uncertain_significance_1", true);
 		return (true);
@@ -664,10 +656,10 @@ function fill_report ()
 
 	for (var criteria_name in dict_criteria)
 	{
-		bool_evidence = dict_criteria[criteria_name];
+		var bool_evidence = dict_criteria[criteria_name];
 		if (bool_evidence)
 		{
-			if (criteria_name[0] == ("P"))
+			if (criteria_name[0] === ("P"))
 			{
 			//if (criteria_name.startsWith ("P"))
 				evidence_of_pathogenicity += criteria_name + " ";
