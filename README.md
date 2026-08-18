@@ -15,6 +15,7 @@ https://naltang.github.io/interpretation-of-sequence-variants/
 
 ## Version history
 
+- 2026.8.19 1.1 migrated to GitHub Pages
 - 2017.6.30 1.0 initial version
 
 
