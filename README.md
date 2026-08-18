@@ -11,7 +11,7 @@ Download index.html and open it with your favorite browser
 #### Online
 Open the following URL with your favorite browser.
 
-https://www.koreanhla.com/acmg/standards-and-guidelines/interpretation-of-sequence-variants/
+https://naltang.github.io/interpretation-of-sequence-variants/
 
 ## Version history
 
